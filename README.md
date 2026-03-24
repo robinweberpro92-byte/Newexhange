@@ -78,4 +78,3 @@ See `docs/ARCHITECTURE.md`.
 - The current file-upload strategy uses local disk storage under `public/uploads` as a mock KYC implementation.
 - The built-in rate limiter is intentionally simple and should be replaced by Redis / Upstash / gateway controls in distributed production.
 - Branding, CMS and translations live in the database and are surfaced in the admin back-office.
-"# Newexhange" 

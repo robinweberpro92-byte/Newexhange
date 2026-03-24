@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Menu } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getBrandSettings } from "@/lib/branding";
 import { getDictionary, getLocale } from "@/lib/i18n";
@@ -28,11 +29,14 @@ export async function SiteHeader() {
         </Link>
 
         <nav className="hidden items-center gap-2 lg:flex">
+          <Link href="/#exchange" className="rounded-full px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-text">
+            {dictionary.common.exchange}
+          </Link>
+          <Link href="/#how-it-works" className="rounded-full px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-text">
+            {dictionary.common.howItWorks}
+          </Link>
           <Link href="/#payments" className="rounded-full px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-text">
             {dictionary.common.payments}
-          </Link>
-          <Link href="/#loyalty" className="rounded-full px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-text">
-            {dictionary.common.loyalty}
           </Link>
           <Link href="/#reviews" className="rounded-full px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-text">
             {dictionary.common.reviews}
@@ -40,12 +44,15 @@ export async function SiteHeader() {
           <Link href="/#faq" className="rounded-full px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-text">
             {dictionary.common.faq}
           </Link>
-          <Link href="/#contact" className="rounded-full px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-text">
+          <Link href="/contact" className="rounded-full px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-text">
             {dictionary.common.contact}
           </Link>
         </nav>
 
         <div className="flex items-center gap-2">
+          <div className="inline-flex lg:hidden h-10 w-10 items-center justify-center rounded-full border border-line bg-white/5 text-muted">
+            <Menu className="h-4 w-4" />
+          </div>
           <LanguageSwitcher locale={locale} />
           {currentUser ? (
             <>

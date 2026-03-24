@@ -13,11 +13,11 @@ export default async function ForgotPasswordPage() {
           <div className="space-y-3 text-center">
             <p className="text-sm uppercase tracking-[0.18em] text-muted">YasarPack</p>
             <h1 className="font-display text-3xl font-black text-text md:text-4xl">{dictionary.auth.forgotPasswordTitle}</h1>
-            <p className="text-muted">We generate a secure reset token and store only a hash in database.</p>
+            <p className="text-muted">Entrez votre email. Nous vous enverrons un lien securise de reinitialisation valable pendant une heure.</p>
           </div>
           <ForgotPasswordForm />
           <p className="text-center text-sm text-muted">
-            Back to <Link href="/login" className="text-text hover:underline">login</Link>
+            Retour a <Link href="/login" className="text-text hover:underline">la connexion</Link>
           </p>
         </Card>
       </div>

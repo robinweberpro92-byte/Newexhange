@@ -41,19 +41,19 @@ export type LoyaltySettings = {
 
 const heroFallbacks: Record<"fr" | "en", HeroContent> = {
   fr: {
-    badge: "Plateforme premium securisee",
-    title: "Transformez vos paiements en crypto avec plus de clarte.",
+    badge: "Exchange crypto premium",
+    title: "Achetez, vendez et exchangez vos cryptos avec des rails clairs et administrables.",
     subtitle:
-      "Une interface plus propre, plus rassurante et plus moderne pour acheter, vendre et suivre chaque operation sans friction.",
-    primaryCtaLabel: "Commencer maintenant",
-    secondaryCtaLabel: "Voir comment ca marche"
+      "PayPal, LTC, BTC, ETH, USDT, carte et virement : chaque operation affiche ses frais, son delai estime et son niveau de verification.",
+    primaryCtaLabel: "Demarrer un exchange",
+    secondaryCtaLabel: "Voir le fonctionnement"
   },
   en: {
-    badge: "Secure premium platform",
-    title: "Turn your payments into crypto with more clarity.",
+    badge: "Premium crypto exchange",
+    title: "Buy, sell and exchange crypto with clear and configurable payment rails.",
     subtitle:
-      "A cleaner, more reassuring and more modern interface to buy, sell and track every operation without friction.",
-    primaryCtaLabel: "Get started",
+      "PayPal, LTC, BTC, ETH, USDT, card and bank transfer: every operation exposes fees, ETA and verification requirements.",
+    primaryCtaLabel: "Start exchange",
     secondaryCtaLabel: "See how it works"
   }
 };
@@ -61,49 +61,50 @@ const heroFallbacks: Record<"fr" | "en", HeroContent> = {
 const trustFallbacks: Record<"fr" | "en", TrustContent> = {
   fr: {
     stats: [
-      { label: "Utilisateurs actifs", value: "12.4k" },
+      { label: "Utilisateurs actifs", value: "12.4k+" },
       { label: "Volume traite", value: "€18.9M" },
-      { label: "Taux KYC", value: "97.8%" }
+      { label: "Temps moyen", value: "< 15 min" }
     ],
-    badges: ["SSL", "KYC", "24/7"]
+    badges: ["SSL chiffre", "KYC progressif", "Support 24/7"]
   },
   en: {
     stats: [
-      { label: "Active users", value: "12.4k" },
+      { label: "Active users", value: "12.4k+" },
       { label: "Volume processed", value: "€18.9M" },
-      { label: "KYC pass rate", value: "97.8%" }
+      { label: "Avg. settlement", value: "< 15 min" }
     ],
-    badges: ["SSL", "KYC", "24/7"]
+    badges: ["SSL encrypted", "Progressive KYC", "24/7 support"]
   }
 };
 
 const finalCtaFallbacks: Record<"fr" | "en", FinalCtaContent> = {
   fr: {
-    title: "Pret a lancer une vraie base produit premium ?",
-    text: "Auth securisee, dashboards reels, paiements administrables, loyalty, support et CMS sont deja structures dans cette base.",
-    buttonLabel: "Lancer la plateforme"
+    title: "Lancez votre premier exchange en moins de 5 minutes.",
+    text: "Inscription rapide, parcours de verification progressif, suivi des transactions et support humain pour chaque operation sensible.",
+    buttonLabel: "Creer un compte gratuitement"
   },
   en: {
-    title: "Ready to ship a real premium product foundation?",
-    text: "Secure auth, real dashboards, configurable payments, loyalty, support and CMS are already structured in this base.",
-    buttonLabel: "Launch the platform"
+    title: "Start your first exchange in under 5 minutes.",
+    text: "Fast onboarding, progressive verification, transparent transaction tracking and human support for every sensitive operation.",
+    buttonLabel: "Create free account"
   }
 };
 
 const contactFallback: ContactContent = {
   email: "support@yasarpack.com",
   phone: "+33 1 84 80 29 11",
-  address: "Paris, France"
+  address: "12 rue de la Paix, 75002 Paris, France"
 };
 
 const footerFallback: FooterContent = {
   aboutText:
-    "YasarPack centralise les flux de paiement, la verification KYC, le support et les modules d'administration dans une base produit premium.",
-  finalNote: "Les operations crypto peuvent etre soumises a verification de conformite.",
+    "YasarPack simplifie l'achat, la vente et l'exchange de cryptos avec des moyens de paiement configurables, un suivi clair et un back-office complet.",
+  finalNote: "AML/KYC applique selon le montant, le pays et le rail de paiement selectionne.",
   links: [
-    { label: "Privacy", href: "#" },
-    { label: "Terms", href: "#" },
-    { label: "Support", href: "/dashboard/support" }
+    { label: "Privacy", href: "/legal/privacy" },
+    { label: "Terms", href: "/legal/terms" },
+    { label: "Security", href: "/security" },
+    { label: "About", href: "/about" }
   ]
 };
 

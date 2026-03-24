@@ -10,6 +10,8 @@ const baseDictionaries = {
   fr: {
     common: {
       home: "Accueil",
+      exchange: "Exchange",
+      howItWorks: "Fonctionnement",
       payments: "Paiements",
       loyalty: "Fidelite",
       reviews: "Avis",
@@ -25,15 +27,15 @@ const baseDictionaries = {
       actions: "Actions"
     },
     marketing: {
-      trustTitle: "Une plateforme construite pour inspirer confiance.",
-      paymentsTitle: "Des moyens de paiement pilotables par l'administration.",
-      paymentsText: "Frais, disponibilite, recommandations, maintenance et zones de diffusion sont geres depuis le back-office.",
-      loyaltyTitle: "Une fidelite visible, mesurable et configurable.",
-      loyaltyText: "Les paliers, les points et les bonus restent expliques clairement dans le parcours utilisateur.",
-      reviewsTitle: "Des avis credibles et administrables.",
-      reviewsText: "L'equipe peut moderer, mettre en avant et verifier les temoignages sans toucher au code.",
+      trustTitle: "Une plateforme pensee pour rassurer et convertir.",
+      paymentsTitle: "Choisissez le rail le plus adapte a votre operation.",
+      paymentsText: "PayPal, carte, virement et rails crypto sont presentes clairement avec frais, delais et disponibilite.",
+      loyaltyTitle: "Chaque exchange vous fait progresser.",
+      loyaltyText: "Des paliers simples, de vrais avantages sur les frais et une progression lisible depuis le dashboard.",
+      reviewsTitle: "Des avis qui repondent aux vraies objections.",
+      reviewsText: "Des retours verifies, notes, pays et dates d'affichage administres depuis le back-office.",
       faqTitle: "Questions frequentes",
-      faqText: "Les questions critiques sont placees en premier pour reduire la friction avant conversion."
+      faqText: "Les points sensibles d'un exchange sont traites en premier : KYC, delais, frais, securite et support."
     },
     auth: {
       loginTitle: "Connexion securisee",
@@ -66,6 +68,8 @@ const baseDictionaries = {
   en: {
     common: {
       home: "Home",
+      exchange: "Exchange",
+      howItWorks: "How it works",
       payments: "Payments",
       loyalty: "Loyalty",
       reviews: "Reviews",
@@ -81,15 +85,15 @@ const baseDictionaries = {
       actions: "Actions"
     },
     marketing: {
-      trustTitle: "A platform designed to create trust.",
-      paymentsTitle: "Payment methods fully managed from admin.",
-      paymentsText: "Fees, availability, recommendations, maintenance and display surfaces are all controlled from the back-office.",
-      loyaltyTitle: "Loyalty that is visible, measurable and configurable.",
-      loyaltyText: "Tiers, points and bonuses remain explicit throughout the user journey.",
-      reviewsTitle: "Credible reviews, fully manageable.",
-      reviewsText: "The team can moderate, feature and verify testimonials without touching code.",
+      trustTitle: "A platform designed to reassure and convert.",
+      paymentsTitle: "Choose the rail that fits your transaction.",
+      paymentsText: "PayPal, card, bank transfer and crypto rails are shown clearly with fees, delays and availability.",
+      loyaltyTitle: "Every exchange moves you forward.",
+      loyaltyText: "Simple tiers, real fee benefits and a progression you can track from the dashboard.",
+      reviewsTitle: "Testimonials that answer real objections.",
+      reviewsText: "Verified reviews, visible ratings and fully managed moderation from the back office.",
       faqTitle: "Frequently asked questions",
-      faqText: "Critical questions are surfaced first to reduce friction before conversion."
+      faqText: "The most sensitive exchange topics come first: KYC, delays, fees, security and support."
     },
     auth: {
       loginTitle: "Secure sign in",

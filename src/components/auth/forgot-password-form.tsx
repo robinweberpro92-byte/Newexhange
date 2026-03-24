@@ -30,23 +30,20 @@ export function ForgotPasswordForm() {
     });
     const payload = await response.json();
 
-    setMessage(payload.message ?? "If the account exists, a reset flow has been created.");
-    if (payload.resetUrl) {
-      setMessage(`${payload.message} ${payload.resetUrl}`);
-    }
+    setMessage(payload.message ?? "Si le compte existe, un lien de reinitialisation a ete envoye.");
     setLoading(false);
   }
 
   return (
     <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
       <div className="space-y-2">
-        <label className="text-sm text-muted">Email</label>
-        <Input type="email" {...form.register("email")} />
+        <label className="text-sm text-muted">Adresse email</label>
+        <Input type="email" placeholder="vous@entreprise.com" {...form.register("email")} />
         {form.formState.errors.email ? <p className="text-sm text-red-300">{form.formState.errors.email.message}</p> : null}
       </div>
       {message ? <p className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{message}</p> : null}
       <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Sending..." : "Send reset link"}
+        {loading ? "Envoi du lien..." : "Envoyer le lien de reinitialisation"}
       </Button>
     </form>
   );

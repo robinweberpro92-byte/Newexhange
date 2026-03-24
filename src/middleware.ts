@@ -1,15 +1,22 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-const authRoutes = ["/login", "/register", "/forgot-password", "/reset-password"];
+const authRoutes = ["/login", "/register", "/forgot-password", "/reset-password", "/admin/login"];
 
 export async function middleware(request: NextRequest) {
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
   const pathname = request.nextUrl.pathname;
 
+  if (pathname === "/admin/login") {
+    if (token?.role === "ADMIN") {
+      return NextResponse.redirect(new URL("/admin/overview", request.url));
+    }
+    return NextResponse.next();
+  }
+
   if (pathname.startsWith("/admin")) {
     if (!token) {
-      const url = new URL("/login", request.url);
+      const url = new URL("/admin/login", request.url);
       url.searchParams.set("next", pathname);
       return NextResponse.redirect(url);
     }
@@ -34,5 +41,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/login", "/register", "/forgot-password", "/reset-password/:path*"]
+  matcher: ["/dashboard/:path*", "/admin/:path*", "/login", "/register", "/forgot-password", "/reset-password/:path*", "/admin/login"]
 };

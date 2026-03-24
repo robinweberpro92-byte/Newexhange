@@ -10,17 +10,13 @@ const passwordSchema = z
 
 export const loginSchema = z.object({
   email: z.string().email("Email invalide"),
-  password: z.string().min(8)
+  password: z.string().min(8),
+  rememberMe: z.boolean().optional().default(false)
 });
 
 export const registerSchema = z
   .object({
-    firstName: z.string().min(2).max(80),
-    lastName: z.string().min(2).max(80),
     email: z.string().email(),
-    phone: z.string().max(40).optional().or(z.literal("")),
-    country: z.string().max(80).optional().or(z.literal("")),
-    language: z.enum(["fr", "en"]).default("fr"),
     password: passwordSchema,
     confirmPassword: z.string()
   })
@@ -28,6 +24,14 @@ export const registerSchema = z
     path: ["confirmPassword"],
     message: "Les mots de passe ne correspondent pas"
   });
+
+export const profileCompletionSchema = z.object({
+  firstName: z.string().min(2).max(80),
+  lastName: z.string().min(2).max(80),
+  phone: z.string().max(40).optional().or(z.literal("")),
+  country: z.string().max(80).optional().or(z.literal("")),
+  language: z.enum(["fr", "en"]).default("fr")
+});
 
 export const passwordResetRequestSchema = z.object({
   email: z.string().email()

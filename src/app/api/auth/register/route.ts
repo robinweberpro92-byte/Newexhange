@@ -5,6 +5,15 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { hashPassword, normalizeEmail } from "@/lib/security";
 import { registerSchema } from "@/lib/validators/auth";
 
+function buildDefaultName(email: string) {
+  const localPart = email.split("@")[0] ?? "member";
+  const cleaned = localPart.replace(/[._-]+/g, " ").trim();
+  const words = cleaned.split(/\s+/).filter(Boolean);
+  const firstName = words[0] ? `${words[0].charAt(0).toUpperCase()}${words[0].slice(1)}` : "New";
+  const lastName = words[1] ? `${words[1].charAt(0).toUpperCase()}${words[1].slice(1)}` : "Member";
+  return { firstName, lastName };
+}
+
 export async function POST(request: Request) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
   const rate = checkRateLimit(`register:${ip}`, 8, 60_000);
@@ -28,15 +37,17 @@ export async function POST(request: Request) {
     });
 
     const passwordHash = await hashPassword(parsed.password);
+    const { firstName, lastName } = buildDefaultName(email);
+
     await prisma.user.create({
       data: {
-        firstName: parsed.firstName,
-        lastName: parsed.lastName,
+        firstName,
+        lastName,
         email,
         passwordHash,
-        phone: parsed.phone || null,
-        country: parsed.country || null,
-        language: parsed.language,
+        phone: null,
+        country: null,
+        language: "fr",
         role: Role.USER,
         loyaltyTierId: defaultTier?.id,
         notificationPreferences: {
@@ -47,7 +58,7 @@ export async function POST(request: Request) {
       }
     });
 
-    return NextResponse.json({ success: true, message: "Account created successfully." }, { status: 201 });
+    return NextResponse.json({ success: true, message: "Account created successfully. Please sign in to continue." }, { status: 201 });
   } catch (error) {
     console.error("REGISTER_ERROR", error);
     return NextResponse.json({ error: "Unable to create account." }, { status: 400 });

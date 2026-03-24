@@ -17,7 +17,7 @@ export async function logAdminAction(input: LogAdminActionInput) {
       action: input.action,
       entityType: input.entityType,
       entityId: input.entityId,
-      details: input.details as any,
+      details: input.details,
       ipAddress: input.ipAddress,
       userAgent: input.userAgent
     }
