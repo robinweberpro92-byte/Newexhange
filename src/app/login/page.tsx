@@ -3,12 +3,13 @@ import { Card } from "@/components/ui/card";
 import { LoginForm } from "@/components/auth/login-form";
 import { getCurrentSession } from "@/lib/auth";
 import { getDictionary } from "@/lib/i18n";
+import { isAdminRole } from "@/lib/rbac";
 import { redirect } from "next/navigation";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const [session, dictionary, query] = await Promise.all([getCurrentSession(), getDictionary(), searchParams]);
   if (session?.user?.id) {
-    redirect(session.user.role === "ADMIN" ? "/admin/overview" : "/dashboard/overview");
+    redirect(isAdminRole(session.user.role) ? "/admin/overview" : "/dashboard/overview");
   }
 
   const next = typeof query.next === "string" ? query.next : undefined;

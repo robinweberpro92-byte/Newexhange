@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { adminRoles } from "@/lib/rbac";
 
 const authRoutes = ["/login", "/register", "/forgot-password", "/reset-password", "/admin/login"];
 
@@ -8,7 +9,7 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   if (pathname === "/admin/login") {
-    if (token?.role === "ADMIN") {
+    if (token?.role && adminRoles.includes(token.role as never)) {
       return NextResponse.redirect(new URL("/admin/overview", request.url));
     }
     return NextResponse.next();
@@ -21,7 +22,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    if (token.role !== "ADMIN") {
+    if (!token.role || !adminRoles.includes(token.role as never)) {
       return NextResponse.redirect(new URL("/dashboard/overview", request.url));
     }
   }
@@ -33,7 +34,7 @@ export async function middleware(request: NextRequest) {
   }
 
   if (authRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`)) && token) {
-    const target = token.role === "ADMIN" ? "/admin/overview" : "/dashboard/overview";
+    const target = token.role && adminRoles.includes(token.role as never) ? "/admin/overview" : "/dashboard/overview";
     return NextResponse.redirect(new URL(target, request.url));
   }
 

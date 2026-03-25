@@ -21,6 +21,18 @@ export default async function DashboardOverviewPage() {
 
   return (
     <div className="space-y-6">
+      <Card className="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-[0.16em] text-muted">Quick actions</p>
+          <h2 className="mt-2 font-display text-2xl font-black text-text">Start a new order or continue an existing one</h2>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/dashboard/exchange"><Button size="sm">New exchange</Button></Link>
+          <Link href="/dashboard/transactions"><Button size="sm" variant="secondary">Track orders</Button></Link>
+          <Link href="/dashboard/support"><Button size="sm" variant="secondary">Need help</Button></Link>
+        </div>
+      </Card>
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Estimated wallet" value={formatCurrency(data.wallet.totalEstimatedValue)} meta="Computed from completed transactions" />
         <StatCard label="Loyalty points" value={data.user.loyaltyPoints.toLocaleString()} meta={data.user.loyaltyTier?.name ?? "No tier yet"} />

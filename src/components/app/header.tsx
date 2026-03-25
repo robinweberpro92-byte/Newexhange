@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Menu } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getBrandSettings } from "@/lib/branding";
 import { getDictionary, getLocale } from "@/lib/i18n";
+import { isAdminRole } from "@/lib/rbac";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/app/language-switcher";
 import { LogoutButton } from "@/components/app/logout-button";
@@ -29,20 +30,23 @@ export async function SiteHeader() {
         </Link>
 
         <nav className="hidden items-center gap-2 lg:flex">
-          <Link href="/#exchange" className="rounded-full px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-text">
+          <Link href="/exchange" className="rounded-full px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-text">
             {dictionary.common.exchange}
           </Link>
           <Link href="/#how-it-works" className="rounded-full px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-text">
             {dictionary.common.howItWorks}
           </Link>
-          <Link href="/#payments" className="rounded-full px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-text">
+          <Link href="/payment-methods" className="rounded-full px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-text">
             {dictionary.common.payments}
           </Link>
-          <Link href="/#reviews" className="rounded-full px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-text">
+          <Link href="/reviews" className="rounded-full px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-text">
             {dictionary.common.reviews}
           </Link>
-          <Link href="/#faq" className="rounded-full px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-text">
+          <Link href="/faq" className="rounded-full px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-text">
             {dictionary.common.faq}
+          </Link>
+          <Link href="/support" className="rounded-full px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-text">
+            Support
           </Link>
           <Link href="/contact" className="rounded-full px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-text">
             {dictionary.common.contact}
@@ -50,9 +54,9 @@ export async function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <div className="inline-flex lg:hidden h-10 w-10 items-center justify-center rounded-full border border-line bg-white/5 text-muted">
-            <Menu className="h-4 w-4" />
-          </div>
+          <Link href="/exchange" className="inline-flex lg:hidden h-10 items-center gap-2 rounded-full border border-line bg-white/5 px-3 text-sm text-muted">
+            Exchange <ArrowRight className="h-4 w-4" />
+          </Link>
           <LanguageSwitcher locale={locale} />
           {currentUser ? (
             <>
@@ -61,7 +65,7 @@ export async function SiteHeader() {
                   {dictionary.common.dashboard}
                 </Button>
               </Link>
-              {currentUser.role === "ADMIN" ? (
+              {isAdminRole(currentUser.role) ? (
                 <Link href="/admin/overview" className="hidden md:block">
                   <Button size="sm">{dictionary.common.admin}</Button>
                 </Link>

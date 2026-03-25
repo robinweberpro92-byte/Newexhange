@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { withFallback } from "@/lib/data-access";
 
 export const defaultBrand = {
   brandName: "YasarPack",
@@ -18,9 +19,14 @@ export const defaultBrand = {
 };
 
 export async function getBrandSettings() {
-  const brand = await prisma.brandSetting.findFirst({
-    orderBy: { updatedAt: "desc" }
-  });
-
-  return brand ?? defaultBrand;
+  return withFallback(
+    async () => {
+      const brand = await prisma.brandSetting.findFirst({
+        orderBy: { updatedAt: "desc" }
+      });
+      return brand ?? defaultBrand;
+    },
+    defaultBrand,
+    "brand settings"
+  );
 }

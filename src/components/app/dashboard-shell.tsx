@@ -15,6 +15,7 @@ type DashboardShellProps = {
 };
 
 const items = [
+  { href: "/dashboard/exchange", label: "Exchange" },
   { href: "/dashboard/overview", label: "Overview" },
   { href: "/dashboard/wallet", label: "Wallet" },
   { href: "/dashboard/transactions", label: "Transactions" },

@@ -6,7 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { getAdminUsersData } from "@/lib/queries";
+import { roleLabel } from "@/lib/rbac";
 import { formatDate } from "@/lib/utils";
+
+const roleOptions = ["USER", "ADMIN", "SUPER_ADMIN", "SUPPORT_ADMIN", "CONTENT_ADMIN", "FINANCE_ADMIN", "COMPLIANCE_ADMIN", "ANALYST"] as const;
 
 export default async function AdminUsersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
@@ -28,8 +31,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
             <label className="mb-2 block text-sm text-muted">Role</label>
             <Select name="role" defaultValue={role}>
               <option value="">All</option>
-              <option value="USER">User</option>
-              <option value="ADMIN">Admin</option>
+              {roleOptions.map((value) => <option key={value} value={value}>{roleLabel(value)}</option>)}
             </Select>
           </div>
           <div>
@@ -59,7 +61,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
       <Card className="space-y-4">
         <div>
           <p className="text-xs uppercase tracking-[0.16em] text-muted">Users management</p>
-          <h2 className="mt-2 font-display text-2xl font-black text-text">Accounts</h2>
+          <h2 className="mt-2 font-display text-2xl font-black text-text">Accounts and admin roles</h2>
         </div>
         <div className="table-scroll">
           <table>
@@ -85,7 +87,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
                     </Link>
                     <div className="text-sm text-muted">{user.email}</div>
                   </td>
-                  <td>{user.role}</td>
+                  <td>{roleLabel(user.role)}</td>
                   <td>
                     <Badge tone={user.isActive ? "green" : "red"}>{user.isActive ? "Active" : "Suspended"}</Badge>
                   </td>
@@ -103,8 +105,10 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
                     </form>
                     <form action={changeUserRoleAction} className="flex gap-2">
                       <input type="hidden" name="userId" value={user.id} />
-                      <input type="hidden" name="role" value={user.role === "ADMIN" ? "USER" : "ADMIN"} />
-                      <SubmitButton label={user.role === "ADMIN" ? "Make user" : "Make admin"} pendingLabel="Saving..." size="sm" />
+                      <Select name="role" defaultValue={user.role}>
+                        {roleOptions.map((value) => <option key={value} value={value}>{roleLabel(value)}</option>)}
+                      </Select>
+                      <SubmitButton label="Update role" pendingLabel="Saving..." size="sm" />
                     </form>
                   </td>
                 </tr>

@@ -1,10 +1,10 @@
-import { deleteFaqAction, updateContactContentAction, updateFinalCtaAction, updateFooterContentAction, updateHeroContentAction, updateTrustContentAction, upsertFaqAction } from "@/actions/admin";
+import { deleteFaqAction, updateAnnouncementAction, updateContactContentAction, updateFinalCtaAction, updateFooterContentAction, updateHeroContentAction, updateSocialLinksAction, updateTrustContentAction, upsertFaqAction } from "@/actions/admin";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Textarea } from "@/components/ui/textarea";
-import { getContactContent, getFinalCtaContent, getFooterContent, getHeroContent, getTrustContent } from "@/lib/cms";
+import { getAnnouncementContent, getContactContent, getFinalCtaContent, getFooterContent, getHeroContent, getSocialLinks, getTrustContent } from "@/lib/cms";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { formatDate } from "@/lib/utils";
@@ -18,12 +18,14 @@ export default async function AdminCmsPage({
   const locale = typeof params.locale === "string" && ["fr", "en"].includes(params.locale) ? (params.locale as "fr" | "en") : "fr";
   const editFaqId = typeof params.editFaq === "string" ? params.editFaq : undefined;
 
-  const [hero, trust, finalCta, contact, footer, faqs] = await Promise.all([
+  const [hero, trust, finalCta, contact, footer, socials, announcement, faqs] = await Promise.all([
     getHeroContent(locale),
     getTrustContent(locale),
     getFinalCtaContent(locale),
     getContactContent(),
     getFooterContent(),
+    getSocialLinks(),
+    getAnnouncementContent(),
     prisma.faqItem.findMany({
       where: { locale },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }]
@@ -176,6 +178,50 @@ export default async function AdminCmsPage({
               <Textarea name="finalNote" defaultValue={footer.finalNote} className="min-h-[90px]" required />
             </div>
             <SubmitButton label="Update footer" pendingLabel="Saving..." className="w-full" />
+          </form>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-2">
+        <Card className="space-y-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.16em] text-muted">Support & community</p>
+            <h2 className="mt-2 font-display text-2xl font-black text-text">Social links and support shortcuts</h2>
+          </div>
+          <form action={updateSocialLinksAction} className="grid gap-4 md:grid-cols-2">
+            <div><label className="mb-2 block text-sm text-muted">Discord</label><Input name="discord" defaultValue={socials.discord ?? ""} placeholder="https://discord.gg/..." /></div>
+            <div><label className="mb-2 block text-sm text-muted">Telegram</label><Input name="telegram" defaultValue={socials.telegram ?? ""} placeholder="https://t.me/..." /></div>
+            <div><label className="mb-2 block text-sm text-muted">Twitter / X</label><Input name="twitter" defaultValue={socials.twitter ?? ""} placeholder="https://x.com/..." /></div>
+            <div><label className="mb-2 block text-sm text-muted">Instagram</label><Input name="instagram" defaultValue={socials.instagram ?? ""} /></div>
+            <div><label className="mb-2 block text-sm text-muted">Facebook</label><Input name="facebook" defaultValue={socials.facebook ?? ""} /></div>
+            <div><label className="mb-2 block text-sm text-muted">LinkedIn</label><Input name="linkedin" defaultValue={socials.linkedin ?? ""} /></div>
+            <div className="md:col-span-2"><label className="mb-2 block text-sm text-muted">YouTube</label><Input name="youtube" defaultValue={socials.youtube ?? ""} /></div>
+            <div className="md:col-span-2"><SubmitButton label="Update social links" pendingLabel="Saving..." className="w-full" /></div>
+          </form>
+        </Card>
+
+        <Card className="space-y-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.16em] text-muted">Announcements</p>
+            <h2 className="mt-2 font-display text-2xl font-black text-text">Global notice / maintenance banner</h2>
+          </div>
+          <form action={updateAnnouncementAction} className="space-y-4">
+            <div className="rounded-3xl border border-line bg-white/5 p-4"><label className="flex items-center gap-3 text-sm text-muted"><input type="checkbox" name="active" defaultChecked={announcement.active} /> Banner active</label></div>
+            <div>
+              <label className="mb-2 block text-sm text-muted">Tone</label>
+              <Select name="tone" defaultValue={announcement.tone}>
+                <option value="info">Info</option>
+                <option value="warning">Warning</option>
+                <option value="success">Success</option>
+                <option value="maintenance">Maintenance</option>
+              </Select>
+            </div>
+            <div><label className="mb-2 block text-sm text-muted">Banner text</label><Textarea name="text" defaultValue={announcement.text} className="min-h-[120px]" required /></div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div><label className="mb-2 block text-sm text-muted">CTA label</label><Input name="ctaLabel" defaultValue={announcement.ctaLabel ?? ""} /></div>
+              <div><label className="mb-2 block text-sm text-muted">CTA URL</label><Input name="ctaUrl" defaultValue={announcement.ctaUrl ?? ""} /></div>
+            </div>
+            <SubmitButton label="Update announcement" pendingLabel="Saving..." className="w-full" />
           </form>
         </Card>
       </div>

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { logAdminAction } from "@/lib/admin-log";
+import { canManageAdmins, isSuperAdminRole } from "@/lib/rbac";
 import { upsertSiteSetting } from "@/lib/cms";
 import { adjustUserPoints, awardLoyaltyForTransaction, reverseLoyaltyForTransaction } from "@/lib/loyalty";
 import { prisma } from "@/lib/prisma";
@@ -17,6 +18,8 @@ import {
   cmsFooterSchema,
   cmsHeroSchema,
   cmsTrustSchema,
+  cmsSocialsSchema,
+  announcementSchema,
   faqSchema,
   loyaltySettingsSchema,
   loyaltyTierSchema,
@@ -35,6 +38,15 @@ function parseCountryRestrictions(raw: FormDataEntryValue | null) {
   return sanitizeText(raw, 400)
     .split(",")
     .map((value) => value.trim().toUpperCase())
+    .filter(Boolean);
+}
+
+function parseTagList(raw: FormDataEntryValue | null, normalizer: (value: string) => string = (value) => value) {
+  return sanitizeText(raw, 5000)
+    .split(/
+?
+|,/)
+    .map((value) => normalizer(value.trim()))
     .filter(Boolean);
 }
 
@@ -78,6 +90,15 @@ export async function changeUserRoleAction(formData: FormData) {
     userId: sanitizeText(formData.get("userId"), 40),
     role: sanitizeText(formData.get("role"), 20)
   });
+
+  const targetUser = await prisma.user.findUnique({ where: { id: parsed.userId } });
+  if (!targetUser) {
+    redirect("/admin/users");
+  }
+
+  if ((parsed.role === Role.SUPER_ADMIN || isSuperAdminRole(targetUser.role)) && !canManageAdmins(admin.role)) {
+    redirect(`/admin/users/${parsed.userId}?roleDenied=1`);
+  }
 
   await prisma.user.update({
     where: { id: parsed.userId },
@@ -243,12 +264,25 @@ export async function upsertPaymentMethodAction(formData: FormData) {
     supportSell: parseBoolean(formData.get("supportSell")),
     supportDeposit: parseBoolean(formData.get("supportDeposit")),
     supportWithdrawal: parseBoolean(formData.get("supportWithdrawal")),
+    supportedAssets: parseTagList(formData.get("supportedAssets"), (value) => value.toUpperCase()),
     countryRestrictions: parseCountryRestrictions(formData.get("countryRestrictions")),
     displayInHero: parseBoolean(formData.get("displayInHero")),
     displayInCheckout: parseBoolean(formData.get("displayInCheckout")),
     displayInFooter: parseBoolean(formData.get("displayInFooter")),
     trustMessage: sanitizeText(formData.get("trustMessage"), 300),
     unavailableMessage: sanitizeText(formData.get("unavailableMessage"), 300),
+    instructionsTitle: sanitizeText(formData.get("instructionsTitle"), 120),
+    instructionsBody: sanitizeMultilineText(formData.get("instructionsBody"), 2000),
+    recipientLabel: sanitizeText(formData.get("recipientLabel"), 80),
+    recipientValue: sanitizeText(formData.get("recipientValue"), 200),
+    paymentLink: sanitizeText(formData.get("paymentLink"), 300),
+    referenceLabel: sanitizeText(formData.get("referenceLabel"), 80),
+    referenceValue: sanitizeText(formData.get("referenceValue"), 240),
+    requiresProof: parseBoolean(formData.get("requiresProof")),
+    proofHelpText: sanitizeText(formData.get("proofHelpText"), 240),
+    messageTemplatesRaw: sanitizeMultilineText(formData.get("messageTemplatesRaw"), 5000),
+    supportDiscordUrl: sanitizeText(formData.get("supportDiscordUrl"), 300),
+    supportTelegramUrl: sanitizeText(formData.get("supportTelegramUrl"), 300),
     sortOrder: parseNumber(formData.get("sortOrder")),
     feeFixed: parseNumber(formData.get("feeFixed")),
     feePercent: parseNumber(formData.get("feePercent")),
@@ -268,12 +302,25 @@ export async function upsertPaymentMethodAction(formData: FormData) {
     supportSell: parsed.supportSell,
     supportDeposit: parsed.supportDeposit,
     supportWithdrawal: parsed.supportWithdrawal,
+    supportedAssets: parsed.supportedAssets,
     countryRestrictions: parsed.countryRestrictions,
     displayInHero: parsed.displayInHero,
     displayInCheckout: parsed.displayInCheckout,
     displayInFooter: parsed.displayInFooter,
     trustMessage: parsed.trustMessage || null,
     unavailableMessage: parsed.unavailableMessage || null,
+    instructionsTitle: parsed.instructionsTitle || null,
+    instructionsBody: parsed.instructionsBody || null,
+    recipientLabel: parsed.recipientLabel || null,
+    recipientValue: parsed.recipientValue || null,
+    paymentLink: parsed.paymentLink || null,
+    referenceLabel: parsed.referenceLabel || null,
+    referenceValue: parsed.referenceValue || null,
+    requiresProof: parsed.requiresProof,
+    proofHelpText: parsed.proofHelpText || null,
+    messageTemplates: parsed.messageTemplatesRaw ? parseTagList(parsed.messageTemplatesRaw) : [],
+    supportDiscordUrl: parsed.supportDiscordUrl || null,
+    supportTelegramUrl: parsed.supportTelegramUrl || null,
     sortOrder: parsed.sortOrder,
     feeFixed: parsed.feeFixed,
     feePercent: parsed.feePercent,
@@ -518,7 +565,7 @@ export async function adminReplyTicketAction(formData: FormData) {
       data: {
         ticketId: parsed.ticketId,
         authorId: admin.id,
-        authorRole: Role.ADMIN,
+        authorRole: admin.role,
         message: parsed.message,
         isInternal: parsed.isInternal
       }
@@ -825,4 +872,55 @@ export async function deleteTranslationAction(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/admin/translations");
   redirect(`/admin/translations?locale=${locale}`);
+}
+
+export async function updateSocialLinksAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const parsed = cmsSocialsSchema.parse({
+    discord: sanitizeText(formData.get("discord"), 300),
+    telegram: sanitizeText(formData.get("telegram"), 300),
+    twitter: sanitizeText(formData.get("twitter"), 300),
+    instagram: sanitizeText(formData.get("instagram"), 300),
+    facebook: sanitizeText(formData.get("facebook"), 300),
+    linkedin: sanitizeText(formData.get("linkedin"), 300),
+    youtube: sanitizeText(formData.get("youtube"), 300)
+  });
+
+  await upsertSiteSetting("site.socials", "global", parsed, "Community and support links");
+
+  await logAdminAction({
+    adminId: admin.id,
+    action: "SOCIAL_LINKS_UPDATED",
+    entityType: "SiteSetting",
+    entityId: "site.socials"
+  });
+
+  revalidatePath("/");
+  revalidatePath("/support");
+  revalidatePath("/contact");
+  redirect("/admin/cms?socialsUpdated=1");
+}
+
+export async function updateAnnouncementAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const parsed = announcementSchema.parse({
+    active: parseBoolean(formData.get("active")),
+    tone: sanitizeText(formData.get("tone"), 20),
+    text: sanitizeText(formData.get("text"), 500),
+    ctaLabel: sanitizeText(formData.get("ctaLabel"), 80),
+    ctaUrl: sanitizeText(formData.get("ctaUrl"), 200)
+  });
+
+  await upsertSiteSetting("site.announcement", "global", parsed, "Global notices and maintenance banners");
+
+  await logAdminAction({
+    adminId: admin.id,
+    action: "ANNOUNCEMENT_UPDATED",
+    entityType: "SiteSetting",
+    entityId: "site.announcement",
+    details: { active: parsed.active, tone: parsed.tone }
+  });
+
+  revalidatePath("/");
+  redirect("/admin/cms?announcementUpdated=1");
 }

@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withFallback } from "@/lib/data-access";
 
 export const supportedLocales = ["fr", "en"] as const;
 export type SupportedLocale = (typeof supportedLocales)[number];
@@ -151,18 +152,24 @@ export async function getDictionary(locale?: SupportedLocale) {
     Object.assign(dictionary[namespace], baseDictionaries[resolvedLocale][namespace]);
   }
 
-  const overrides = await prisma.translation.findMany({
-    where: { locale: resolvedLocale }
-  });
+  return withFallback(
+    async () => {
+      const overrides = await prisma.translation.findMany({
+        where: { locale: resolvedLocale }
+      });
 
-  for (const row of overrides) {
-    const namespace = row.namespace as keyof Dictionary;
-    if (!dictionary[namespace]) {
-      (dictionary as Record<string, Record<string, string>>)[row.namespace] = {};
-    }
+      for (const row of overrides) {
+        const namespace = row.namespace as keyof Dictionary;
+        if (!dictionary[namespace]) {
+          (dictionary as Record<string, Record<string, string>>)[row.namespace] = {};
+        }
 
-    (dictionary as Record<string, Record<string, string>>)[row.namespace][row.key] = row.value;
-  }
+        (dictionary as Record<string, Record<string, string>>)[row.namespace][row.key] = row.value;
+      }
 
-  return dictionary;
+      return dictionary;
+    },
+    dictionary,
+    `translations ${resolvedLocale}`
+  );
 }

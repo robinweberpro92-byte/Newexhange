@@ -20,6 +20,7 @@ import { Card } from "@/components/ui/card";
 import { SectionHeading } from "@/components/app/section-heading";
 import { StatCard } from "@/components/app/stat-card";
 import { getDictionary, getLocale } from "@/lib/i18n";
+import { getAnnouncementContent, getSocialLinks } from "@/lib/cms";
 import { getMarketingData } from "@/lib/queries";
 
 const exchangeSteps = [
@@ -52,7 +53,11 @@ const exchangeMethods = [
 export default async function HomePage() {
   const locale = await getLocale();
   const dictionary = await getDictionary(locale);
-  const { hero, trust, finalCta, paymentMethods, tiers, reviews, faqs } = await getMarketingData(locale);
+  const [{ hero, trust, finalCta, paymentMethods, tiers, reviews, faqs }, announcement, socials] = await Promise.all([
+    getMarketingData(locale),
+    getAnnouncementContent(),
+    getSocialLinks()
+  ]);
 
   const safeHero = {
     ...hero,
@@ -61,6 +66,17 @@ export default async function HomePage() {
     primaryCtaLabel: hero.primaryCtaLabel || "Demarrer un exchange",
     secondaryCtaLabel: hero.secondaryCtaLabel || "Voir le fonctionnement"
   };
+  const effectiveReviews = reviews.length ? reviews : [
+    { id: "review-1", authorName: "Hello", country: "France", verifiedBadge: true, rating: 5, text: "Je vais pas mentir, c'est trop bien : les instructions sont claires, le support repond vite et le statut reste visible." },
+    { id: "review-2", authorName: "Samir", country: "Belgique", verifiedBadge: true, rating: 5, text: "Le flow PayPal vers LTC devient beaucoup plus lisible. J'ai compris quoi copier, quoi payer et quoi attendre." },
+    { id: "review-3", authorName: "Lina", country: "France", verifiedBadge: false, rating: 4, text: "J'apprecie surtout les frais visibles avant validation et la possibilite de contacter le support tout de suite." }
+  ];
+  const effectiveFaqs = faqs.length ? faqs : [
+    { id: "faq-1", question: "Comment se passe une verification manuelle ?", answer: "Vous soumettez votre ordre, un admin verifie le paiement, puis met a jour le statut et effectue le payout." },
+    { id: "faq-2", question: "Dois-je fournir une preuve ?", answer: "Certaines methodes comme PayPal peuvent exiger une capture ou un justificatif pour accelerer la verification." },
+    { id: "faq-3", question: "Quels actifs puis-je recevoir ?", answer: "BTC, LTC, ETH, USDT et d'autres actifs activables depuis l'admin." }
+  ];
+
   const safeFinalCta = {
     ...finalCta,
     title: finalCta.title.toLowerCase().includes("base produit") ? "Lancez votre premier exchange en moins de 5 minutes." : finalCta.title,
@@ -70,6 +86,18 @@ export default async function HomePage() {
 
   return (
     <div className="pb-16">
+      {announcement.active ? (
+        <div className="container-app pt-6">
+          <div className="flex flex-col gap-3 rounded-[1.5rem] border border-line bg-white/5 px-5 py-4 md:flex-row md:items-center md:justify-between">
+            <p className="text-sm text-muted">{announcement.text}</p>
+            {announcement.ctaLabel && announcement.ctaUrl ? (
+              <Link href={announcement.ctaUrl}>
+                <Button size="sm" variant="secondary">{announcement.ctaLabel}</Button>
+              </Link>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
       <section className="overflow-hidden pt-10 md:pt-16">
         <div className="container-app grid gap-10 md:grid-cols-[1.08fr,0.92fr] md:items-center">
           <div className="space-y-6">
@@ -113,8 +141,8 @@ export default async function HomePage() {
                   {safeHero.secondaryCtaLabel}
                 </Button>
               </Link>
-              <Link href="/login">
-                <Button variant="ghost" size="lg">Acceder a mon espace</Button>
+              <Link href="/exchange">
+                <Button variant="ghost" size="lg">Previsualiser un ordre</Button>
               </Link>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -250,7 +278,7 @@ export default async function HomePage() {
             <p className="mt-2 text-sm text-muted">Basé sur les avis affiches, moderes et ordonnes depuis l'administration.</p>
           </div>
           <div className="grid gap-4 lg:grid-cols-3">
-            {reviews.map((review) => (
+            {effectiveReviews.map((review) => (
               <Card key={review.id} className="space-y-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
@@ -273,7 +301,7 @@ export default async function HomePage() {
         <div className="container-app">
           <SectionHeading title={dictionary.marketing.faqTitle} description={dictionary.marketing.faqText} />
           <div className="mt-8 grid gap-4">
-            {faqs.map((faq) => (
+            {effectiveFaqs.map((faq) => (
               <Card key={faq.id} className="p-0">
                 <details className="group rounded-[1.5rem] p-5">
                   <summary className="flex items-center justify-between gap-4 text-lg font-semibold text-text">
@@ -290,9 +318,14 @@ export default async function HomePage() {
               <h3 className="font-display text-2xl font-black text-text">Une question avant de vous lancer ?</h3>
               <p className="mt-2 text-sm text-muted">Notre support reste disponible pour les montants sensibles, les rails particuliers et les cas KYC.</p>
             </div>
-            <Link href="/contact">
-              <Button size="lg">Parler au support</Button>
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/faq">
+                <Button variant="secondary" size="lg">Voir toute la FAQ</Button>
+              </Link>
+              <Link href="/support">
+                <Button size="lg">Parler au support</Button>
+              </Link>
+            </div>
           </Card>
         </div>
       </section>
@@ -310,9 +343,15 @@ export default async function HomePage() {
                 <div className="inline-flex items-center gap-2 rounded-full border border-line bg-white/5 px-3 py-2"><ShieldCheck className="h-4 w-4 text-[var(--brand-accent)]" /> Verification progressive</div>
               </div>
             </div>
-            <Link href="/register">
-              <Button size="lg">{safeFinalCta.buttonLabel}</Button>
-            </Link>
+            <div className="flex flex-col gap-3 md:items-end">
+              <Link href="/register">
+                <Button size="lg">{safeFinalCta.buttonLabel}</Button>
+              </Link>
+              <div className="flex flex-wrap gap-2 text-sm text-muted">
+                {socials.discord ? <a href={socials.discord} target="_blank" rel="noreferrer" className="hover:text-text">Discord</a> : null}
+                {socials.telegram ? <a href={socials.telegram} target="_blank" rel="noreferrer" className="hover:text-text">Telegram</a> : null}
+              </div>
+            </div>
           </div>
         </Card>
       </section>

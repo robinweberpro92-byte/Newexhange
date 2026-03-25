@@ -1,14 +1,15 @@
 "use server";
 
-import { TicketStatus } from "@prisma/client";
+import { TicketStatus, TransactionStatus, TransactionType } from "@prisma/client";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateTicketNumber, sanitizeMultilineText, sanitizeText, verifyPassword, hashPassword } from "@/lib/security";
-import { passwordChangeSchema, profileSchema, ticketCreateSchema, ticketReplySchema } from "@/lib/validators/domain";
-import { parseBoolean } from "@/lib/utils";
+import { estimateAssetAmount, pickTemplate } from "@/lib/exchange";
+import { passwordChangeSchema, profileSchema, ticketCreateSchema, ticketReplySchema, exchangeRequestSchema } from "@/lib/validators/domain";
+import { parseBoolean, parseNumber } from "@/lib/utils";
 
 export async function updateProfileAction(formData: FormData) {
   const user = await requireUser();
@@ -181,4 +182,61 @@ export async function closeTicketAction(formData: FormData) {
 
   revalidatePath("/dashboard/support");
   redirect(`/dashboard/support/${ticketId}?closed=1`);
+}
+
+export async function createExchangeRequestAction(formData: FormData) {
+  const user = await requireUser();
+
+  const parsed = exchangeRequestSchema.parse({
+    paymentMethodId: sanitizeText(formData.get("paymentMethodId"), 40),
+    operation: sanitizeText(formData.get("operation"), 20),
+    sourceAmount: parseNumber(formData.get("sourceAmount")),
+    sourceCurrency: sanitizeText(formData.get("sourceCurrency"), 16).toUpperCase(),
+    targetAsset: sanitizeText(formData.get("targetAsset"), 16).toUpperCase(),
+    destinationDetails: sanitizeText(formData.get("destinationDetails"), 240),
+    referenceMessage: sanitizeText(formData.get("referenceMessage"), 500),
+    notes: sanitizeMultilineText(formData.get("notes"), 2000)
+  });
+
+  const paymentMethod = await prisma.paymentMethod.findUnique({ where: { id: parsed.paymentMethodId } });
+  if (!paymentMethod || !paymentMethod.active || paymentMethod.maintenanceMode) {
+    redirect("/dashboard/exchange?error=method");
+  }
+
+  const estimate = estimateAssetAmount(parsed.sourceAmount, parsed.targetAsset, Number(paymentMethod.feePercent), Number(paymentMethod.feeFixed));
+
+  const transaction = await prisma.transaction.create({
+    data: {
+      userId: user.id,
+      type: parsed.operation as TransactionType,
+      asset: parsed.targetAsset,
+      amount: estimate.assetAmount,
+      fiatCurrency: parsed.sourceCurrency,
+      fiatAmount: parsed.sourceAmount,
+      feeAmount: estimate.feeValue,
+      paymentMethodId: paymentMethod.id,
+      status: paymentMethod.requiresProof ? TransactionStatus.UNDER_REVIEW : TransactionStatus.PENDING,
+      txReference: generateTicketNumber().replace("YP-", "TX-"),
+      notes: parsed.notes || null,
+      metadata: {
+        sourceAmount: parsed.sourceAmount,
+        sourceCurrency: parsed.sourceCurrency,
+        destinationDetails: parsed.destinationDetails,
+        referenceMessage: parsed.referenceMessage || pickTemplate(paymentMethod, Date.now()),
+        instructionsTitle: paymentMethod.instructionsTitle,
+        instructionsBody: paymentMethod.instructionsBody,
+        recipientLabel: paymentMethod.recipientLabel,
+        recipientValue: paymentMethod.recipientValue,
+        paymentLink: paymentMethod.paymentLink,
+        requiresProof: paymentMethod.requiresProof,
+        proofHelpText: paymentMethod.proofHelpText,
+        supportDiscordUrl: paymentMethod.supportDiscordUrl,
+        supportTelegramUrl: paymentMethod.supportTelegramUrl
+      }
+    }
+  });
+
+  revalidatePath("/dashboard/exchange");
+  revalidatePath("/dashboard/transactions");
+  redirect(`/dashboard/exchange?created=${transaction.id}`);
 }

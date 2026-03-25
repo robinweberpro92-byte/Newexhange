@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 type LogAdminActionInput = {
@@ -17,7 +18,7 @@ export async function logAdminAction(input: LogAdminActionInput) {
       action: input.action,
       entityType: input.entityType,
       entityId: input.entityId,
-      details: input.details,
+      details: input.details as Prisma.InputJsonValue,
       ipAddress: input.ipAddress,
       userAgent: input.userAgent
     }

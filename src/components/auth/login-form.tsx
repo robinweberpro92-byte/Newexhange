@@ -10,6 +10,7 @@ import { z } from "zod";
 import { Eye, EyeOff, LockKeyhole, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { isAdminRole } from "@/lib/rbac";
 import { loginSchema } from "@/lib/validators/auth";
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -41,7 +42,8 @@ export function LoginForm({ next, mode = "user" }: LoginFormProps) {
     const result = await signIn("credentials", {
       email: values.email,
       password: values.password,
-      redirect: false
+      redirect: false,
+      portal: mode
     });
 
     if (result?.error) {
@@ -53,13 +55,13 @@ export function LoginForm({ next, mode = "user" }: LoginFormProps) {
     const sessionResponse = await fetch("/api/auth/session");
     const session = await sessionResponse.json();
 
-    if (mode === "admin" && session?.user?.role !== "ADMIN") {
+    if (mode === "admin" && !isAdminRole(session?.user?.role)) {
       setError("Ce portail est reserve a l'administration.");
       setLoading(false);
       return;
     }
 
-    const target = next || (session?.user?.role === "ADMIN" ? "/admin/overview" : "/dashboard/overview");
+    const target = next || (isAdminRole(session?.user?.role) ? "/admin/overview" : "/dashboard/overview");
     router.push(target);
     router.refresh();
   }

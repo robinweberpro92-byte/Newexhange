@@ -3,10 +3,11 @@ import { redirect } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { LoginForm } from "@/components/auth/login-form";
 import { getCurrentSession } from "@/lib/auth";
+import { isAdminRole } from "@/lib/rbac";
 
 export default async function AdminLoginPage() {
   const session = await getCurrentSession();
-  if (session?.user?.id && session.user.role === "ADMIN") {
+  if (session?.user?.id && isAdminRole(session.user.role)) {
     redirect("/admin/overview");
   }
 

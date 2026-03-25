@@ -3,13 +3,14 @@ import { RegisterForm } from "@/components/auth/register-form";
 import { Card } from "@/components/ui/card";
 import { getCurrentSession } from "@/lib/auth";
 import { getDictionary } from "@/lib/i18n";
+import { isAdminRole } from "@/lib/rbac";
 import { redirect } from "next/navigation";
 
 export default async function RegisterPage() {
   const [session, dictionary] = await Promise.all([getCurrentSession(), getDictionary()]);
 
   if (session?.user?.id) {
-    redirect(session.user.role === "ADMIN" ? "/admin/overview" : "/dashboard/overview");
+    redirect(isAdminRole(session.user.role) ? "/admin/overview" : "/dashboard/overview");
   }
 
   return (

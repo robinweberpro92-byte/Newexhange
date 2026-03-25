@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { withFallback } from "@/lib/data-access";
 
 export type HeroContent = {
   badge: string;
@@ -37,6 +38,24 @@ export type LoyaltySettings = {
   tierMode: "BALANCE" | "TOTAL_EARNED";
   description: string;
   paymentMethodBonusEnabled: boolean;
+};
+
+export type SocialLinks = {
+  discord?: string;
+  telegram?: string;
+  twitter?: string;
+  instagram?: string;
+  facebook?: string;
+  linkedin?: string;
+  youtube?: string;
+};
+
+export type AnnouncementContent = {
+  active: boolean;
+  tone: "info" | "warning" | "success" | "maintenance";
+  text: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
 };
 
 const heroFallbacks: Record<"fr" | "en", HeroContent> = {
@@ -116,21 +135,41 @@ const loyaltyFallback: LoyaltySettings = {
   paymentMethodBonusEnabled: true
 };
 
+const socialLinksFallback: SocialLinks = {
+  discord: "https://discord.gg/yasarpack",
+  telegram: "https://t.me/yasarpack",
+  twitter: "https://x.com/yasarpack"
+};
+
+const announcementFallback: AnnouncementContent = {
+  active: true,
+  tone: "info",
+  text: "Manual payment orders are reviewed by an operator as quickly as possible. You can also contact support via Discord or Telegram.",
+  ctaLabel: "Contact support",
+  ctaUrl: "/support"
+};
+
 async function getSetting<T>(key: string, locale: string, fallback: T): Promise<T> {
-  const rows = await prisma.siteSetting.findMany({
-    where: {
-      key,
-      locale: { in: [locale, "fr", "global"] }
-    }
-  });
+  return withFallback(
+    async () => {
+      const rows = await prisma.siteSetting.findMany({
+        where: {
+          key,
+          locale: { in: [locale, "fr", "global"] }
+        }
+      });
 
-  const selected = rows.find((row) => row.locale === locale) ?? rows.find((row) => row.locale === "fr") ?? rows.find((row) => row.locale === "global");
-  if (!selected) return fallback;
+      const selected = rows.find((row) => row.locale === locale) ?? rows.find((row) => row.locale === "fr") ?? rows.find((row) => row.locale === "global");
+      if (!selected) return fallback;
 
-  return {
-    ...(fallback as Record<string, unknown>),
-    ...(selected.value as Record<string, unknown>)
-  } as T;
+      return {
+        ...(fallback as Record<string, unknown>),
+        ...(selected.value as Record<string, unknown>)
+      } as T;
+    },
+    fallback,
+    `site setting ${key}`
+  );
 }
 
 export function upsertSiteSetting(key: string, locale: string, value: Record<string, unknown>, description?: string) {
@@ -176,4 +215,12 @@ export function getFooterContent() {
 
 export function getLoyaltySettings() {
   return getSetting<LoyaltySettings>("loyalty.settings", "global", loyaltyFallback);
+}
+
+export function getSocialLinks() {
+  return getSetting<SocialLinks>("site.socials", "global", socialLinksFallback);
+}
+
+export function getAnnouncementContent() {
+  return getSetting<AnnouncementContent>("site.announcement", "global", announcementFallback);
 }

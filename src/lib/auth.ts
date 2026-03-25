@@ -3,6 +3,7 @@ import { getServerSession, type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { isAdminRole } from "@/lib/rbac";
 import { normalizeEmail, verifyPassword } from "@/lib/security";
 import { loginSchema } from "@/lib/validators/auth";
 
@@ -12,7 +13,7 @@ export const authOptions: NextAuthOptions = {
     maxAge: 60 * 60 * 24 * 7
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === "development",
+  debug: process.env.NEXTAUTH_DEBUG === "true",
   pages: {
     signIn: "/login"
   },
@@ -28,6 +29,7 @@ export const authOptions: NextAuthOptions = {
         if (!parsed.success) return null;
 
         const email = normalizeEmail(parsed.data.email);
+        const portal = typeof credentials?.portal === "string" ? credentials.portal : "user";
         const user = await prisma.user.findUnique({
           where: { email },
           select: {
@@ -44,6 +46,7 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!user || !user.isActive) return null;
+        if (portal === "admin" && !isAdminRole(user.role)) return null;
 
         const isValid = await verifyPassword(parsed.data.password, user.passwordHash);
         if (!isValid) return null;
@@ -113,8 +116,15 @@ export const authOptions: NextAuthOptions = {
   }
 };
 
-export function getCurrentSession() {
-  return getServerSession(authOptions);
+export async function getCurrentSession() {
+  try {
+    return await getServerSession(authOptions);
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[auth] falling back to anonymous session", error);
+    }
+    return null;
+  }
 }
 
 export async function getCurrentUser() {
@@ -139,7 +149,7 @@ export async function requireUser() {
 
 export async function requireAdmin() {
   const user = await requireUser();
-  if (user.role !== Role.ADMIN) {
+  if (!isAdminRole(user.role)) {
     redirect("/dashboard/overview");
   }
   return user;

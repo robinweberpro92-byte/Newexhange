@@ -10,6 +10,12 @@ datasource db {
 enum Role {
   USER
   ADMIN
+  SUPER_ADMIN
+  SUPPORT_ADMIN
+  CONTENT_ADMIN
+  FINANCE_ADMIN
+  COMPLIANCE_ADMIN
+  ANALYST
 }
 
 enum KycStatus {
@@ -247,12 +253,25 @@ model PaymentMethod {
   supportSell         Boolean       @default(true)
   supportDeposit      Boolean       @default(true)
   supportWithdrawal   Boolean       @default(true)
+  supportedAssets     String[]      @default([])
   countryRestrictions String[]
   displayInHero       Boolean       @default(true)
   displayInCheckout   Boolean       @default(true)
   displayInFooter     Boolean       @default(true)
   trustMessage        String?
   unavailableMessage  String?
+  instructionsTitle   String?
+  instructionsBody    String?
+  recipientLabel      String?
+  recipientValue      String?
+  paymentLink         String?
+  referenceLabel      String?
+  referenceValue      String?
+  requiresProof       Boolean       @default(false)
+  proofHelpText       String?
+  messageTemplates    Json?
+  supportDiscordUrl   String?
+  supportTelegramUrl  String?
   sortOrder           Int           @default(0)
   feeFixed            Decimal       @default(0) @db.Decimal(10, 2)
   feePercent          Decimal       @default(0) @db.Decimal(5, 2)

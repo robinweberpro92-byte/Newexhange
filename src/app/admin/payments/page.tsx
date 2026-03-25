@@ -93,6 +93,14 @@ export default async function AdminPaymentsPage({
                 placeholder="FR, BE, CA"
               />
             </div>
+            <div>
+              <label className="mb-2 block text-sm text-muted">Supported assets</label>
+              <Input
+                name="supportedAssets"
+                defaultValue={selected?.supportedAssets?.join(", ") ?? "BTC, LTC, ETH, USDT"}
+                placeholder="BTC, LTC, ETH, USDT"
+              />
+            </div>
 
             <div>
               <label className="mb-2 block text-sm text-muted">Fixed fee (EUR)</label>
@@ -126,6 +134,58 @@ export default async function AdminPaymentsPage({
               <label className="mb-2 block text-sm text-muted">Unavailable message</label>
               <Textarea name="unavailableMessage" defaultValue={selected?.unavailableMessage ?? ""} className="min-h-[90px]" />
             </div>
+            <div>
+              <label className="mb-2 block text-sm text-muted">Instructions title</label>
+              <Input name="instructionsTitle" defaultValue={selected?.instructionsTitle ?? ""} placeholder="How to send your payment" />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm text-muted">Payment link</label>
+              <Input name="paymentLink" defaultValue={selected?.paymentLink ?? ""} placeholder="https://..." />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm text-muted">Recipient label</label>
+              <Input name="recipientLabel" defaultValue={selected?.recipientLabel ?? ""} placeholder="PayPal email / wallet address" />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm text-muted">Recipient value</label>
+              <Input name="recipientValue" defaultValue={selected?.recipientValue ?? ""} placeholder="payments@example.com" />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm text-muted">Reference label</label>
+              <Input name="referenceLabel" defaultValue={selected?.referenceLabel ?? ""} placeholder="Message to include" />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm text-muted">Reference value</label>
+              <Input name="referenceValue" defaultValue={selected?.referenceValue ?? ""} placeholder="Order code / transfer reference" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="mb-2 block text-sm text-muted">Instructions body</label>
+              <Textarea name="instructionsBody" defaultValue={selected?.instructionsBody ?? ""} className="min-h-[150px]" placeholder="Explain clearly how the user must pay, what to copy, what proof to upload, and what happens next." />
+            </div>
+            <div className="md:col-span-2">
+              <label className="mb-2 block text-sm text-muted">Message templates (comma or new line separated)</label>
+              <Textarea
+                name="messageTemplatesRaw"
+                defaultValue={Array.isArray(selected?.messageTemplates) ? selected?.messageTemplates.join("
+") : ""}
+                className="min-h-[140px]"
+                placeholder="Template 1
+Template 2
+Template 3"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm text-muted">Support Discord URL</label>
+              <Input name="supportDiscordUrl" defaultValue={selected?.supportDiscordUrl ?? ""} placeholder="https://discord.gg/..." />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm text-muted">Support Telegram URL</label>
+              <Input name="supportTelegramUrl" defaultValue={selected?.supportTelegramUrl ?? ""} placeholder="https://t.me/..." />
+            </div>
+            <div>
+              <label className="mb-2 block text-sm text-muted">Proof help text</label>
+              <Input name="proofHelpText" defaultValue={selected?.proofHelpText ?? ""} placeholder="Upload a screenshot after payment" />
+            </div>
 
             <div className="rounded-3xl border border-line bg-white/5 p-4 md:col-span-2">
               <p className="mb-3 text-sm font-semibold text-text">Operational toggles</p>
@@ -137,6 +197,7 @@ export default async function AdminPaymentsPage({
                 <label className="flex items-center gap-3 text-sm text-muted"><input type="checkbox" name="supportSell" defaultChecked={selected?.supportSell ?? true} /> Sell</label>
                 <label className="flex items-center gap-3 text-sm text-muted"><input type="checkbox" name="supportDeposit" defaultChecked={selected?.supportDeposit ?? true} /> Deposit</label>
                 <label className="flex items-center gap-3 text-sm text-muted"><input type="checkbox" name="supportWithdrawal" defaultChecked={selected?.supportWithdrawal ?? true} /> Withdrawal</label>
+                <label className="flex items-center gap-3 text-sm text-muted"><input type="checkbox" name="requiresProof" defaultChecked={selected?.requiresProof ?? false} /> Proof required</label>
                 <label className="flex items-center gap-3 text-sm text-muted"><input type="checkbox" name="displayInHero" defaultChecked={selected?.displayInHero ?? true} /> Hero</label>
                 <label className="flex items-center gap-3 text-sm text-muted"><input type="checkbox" name="displayInCheckout" defaultChecked={selected?.displayInCheckout ?? true} /> Checkout</label>
                 <label className="flex items-center gap-3 text-sm text-muted md:col-span-3"><input type="checkbox" name="displayInFooter" defaultChecked={selected?.displayInFooter ?? true} /> Footer</label>
@@ -202,11 +263,26 @@ export default async function AdminPaymentsPage({
                   </div>
                 </div>
 
+                <div className="mt-4 grid gap-3 md:grid-cols-2 text-sm">
+                  <div className="rounded-2xl border border-line bg-black/10 p-3 text-muted">
+                    <p className="text-xs uppercase tracking-[0.16em]">Instruction target</p>
+                    <p className="mt-2 font-semibold text-text">{method.recipientLabel && method.recipientValue ? `${method.recipientLabel}: ${method.recipientValue}` : method.paymentLink ?? "Configured in admin"}</p>
+                    {method.referenceLabel && method.referenceValue ? <p className="mt-2 text-xs text-muted">{method.referenceLabel}: {method.referenceValue}</p> : null}
+                  </div>
+                  <div className="rounded-2xl border border-line bg-black/10 p-3 text-muted">
+                    <p className="text-xs uppercase tracking-[0.16em]">Manual review</p>
+                    <p className="mt-2 font-semibold text-text">{method.requiresProof ? "Proof upload required" : "Proof optional"}</p>
+                    <p className="mt-2 text-xs text-muted">{method.proofHelpText ?? method.instructionsTitle ?? "Admins can validate the payment and update the order timeline."}</p>
+                  </div>
+                </div>
+
                 <div className="mt-4 flex flex-wrap gap-2 text-xs uppercase tracking-[0.14em] text-muted">
                   {method.supportBuy ? <Badge tone="slate">BUY</Badge> : null}
                   {method.supportSell ? <Badge tone="slate">SELL</Badge> : null}
                   {method.supportDeposit ? <Badge tone="slate">DEPOSIT</Badge> : null}
                   {method.supportWithdrawal ? <Badge tone="slate">WITHDRAWAL</Badge> : null}
+                  {method.requiresProof ? <Badge tone="amber">PROOF</Badge> : null}
+                  {method.supportedAssets?.map((asset) => <Badge key={asset} tone="blue">{asset}</Badge>)}
                 </div>
               </div>
             ))}

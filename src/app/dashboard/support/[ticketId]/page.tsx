@@ -41,7 +41,7 @@ export default async function DashboardTicketDetailPage({ params }: { params: Pr
           {ticket.messages.map((message) => (
             <div key={message.id} className={`rounded-2xl border border-line p-4 ${message.authorId === user.id ? "bg-white/5" : "bg-[rgba(73,162,255,0.08)]"}`}>
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="font-semibold text-text">{message.author.firstName} {message.author.lastName}</p>
+                <div><p className="font-semibold text-text">{message.author.firstName} {message.author.lastName}</p><p className="text-xs text-muted">{message.authorId === user.id ? "You" : "Support"}</p></div>
                 <p className="text-xs uppercase tracking-[0.16em] text-muted">{formatDate(message.createdAt)}</p>
               </div>
               <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted">{message.message}</p>

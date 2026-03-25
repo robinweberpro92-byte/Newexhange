@@ -1,18 +1,24 @@
 import Link from "next/link";
 import { ShieldCheck, WalletCards } from "lucide-react";
 import { getBrandSettings } from "@/lib/branding";
-import { getContactContent, getFooterContent } from "@/lib/cms";
+import { getContactContent, getFooterContent, getSocialLinks } from "@/lib/cms";
 import { prisma } from "@/lib/prisma";
+import { withFallback } from "@/lib/data-access";
 
 export async function SiteFooter() {
-  const [brand, footer, contact, paymentMethods] = await Promise.all([
+  const [brand, footer, contact, socials, paymentMethods] = await Promise.all([
     getBrandSettings(),
     getFooterContent(),
     getContactContent(),
-    prisma.paymentMethod.findMany({
-      where: { active: true, displayInFooter: true },
-      orderBy: { sortOrder: "asc" }
-    })
+    getSocialLinks(),
+    withFallback(
+      () => prisma.paymentMethod.findMany({
+        where: { active: true, displayInFooter: true },
+        orderBy: { sortOrder: "asc" }
+      }),
+      [],
+      "footer payment methods"
+    )
   ]);
 
   return (
@@ -37,6 +43,11 @@ export async function SiteFooter() {
         </div>
         <div className="space-y-3">
           <p className="text-xs uppercase tracking-[0.16em] text-muted">Platform</p>
+          <Link href="/exchange" className="block text-sm text-muted transition hover:text-text">Exchange</Link>
+          <Link href="/payment-methods" className="block text-sm text-muted transition hover:text-text">Payment methods</Link>
+          <Link href="/reviews" className="block text-sm text-muted transition hover:text-text">Reviews</Link>
+          <Link href="/faq" className="block text-sm text-muted transition hover:text-text">FAQ</Link>
+          <Link href="/support" className="block text-sm text-muted transition hover:text-text">Support</Link>
           <Link href="/security" className="block text-sm text-muted transition hover:text-text">Securite</Link>
           <Link href="/about" className="block text-sm text-muted transition hover:text-text">A propos</Link>
           <Link href="/contact" className="block text-sm text-muted transition hover:text-text">Contact</Link>
@@ -45,6 +56,10 @@ export async function SiteFooter() {
               {link.label}
             </Link>
           ))}
+          <div className="pt-2 text-xs uppercase tracking-[0.16em] text-muted">Community</div>
+          {socials.discord ? <a href={socials.discord} target="_blank" rel="noreferrer" className="block text-sm text-muted transition hover:text-text">Discord</a> : null}
+          {socials.telegram ? <a href={socials.telegram} target="_blank" rel="noreferrer" className="block text-sm text-muted transition hover:text-text">Telegram</a> : null}
+          {socials.twitter ? <a href={socials.twitter} target="_blank" rel="noreferrer" className="block text-sm text-muted transition hover:text-text">Twitter / X</a> : null}
         </div>
       </div>
       {paymentMethods.length > 0 ? (

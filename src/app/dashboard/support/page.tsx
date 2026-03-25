@@ -8,11 +8,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { requireUser } from "@/lib/auth";
 import { getUserTicketsData } from "@/lib/queries";
+import { getSocialLinks } from "@/lib/cms";
 import { formatDate } from "@/lib/utils";
 
 export default async function DashboardSupportPage() {
   const user = await requireUser();
-  const tickets = await getUserTicketsData(user.id);
+  const [tickets, socials] = await Promise.all([getUserTicketsData(user.id), getSocialLinks()]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1.05fr,0.95fr]">
@@ -93,6 +94,13 @@ export default async function DashboardSupportPage() {
           </div>
           <SubmitButton label="Create ticket" pendingLabel="Creating..." className="w-full" />
         </form>
+        <div className="rounded-2xl border border-line bg-white/5 p-4 text-sm text-muted">
+          Expected reply: usually within 1 hour for payment-related issues.
+          <div className="mt-3 flex flex-wrap gap-3">
+            {socials.discord ? <a href={socials.discord} target="_blank" rel="noreferrer" className="font-semibold text-[var(--brand-secondary)] hover:underline">Discord</a> : null}
+            {socials.telegram ? <a href={socials.telegram} target="_blank" rel="noreferrer" className="font-semibold text-[var(--brand-secondary)] hover:underline">Telegram</a> : null}
+          </div>
+        </div>
       </Card>
     </div>
   );

@@ -3,6 +3,9 @@ import { PrismaClient, Role, KycStatus, ReviewStatus, TicketCategory, TicketPrio
 
 const prisma = new PrismaClient();
 
+const bootstrapAdminEmail = process.env.BOOTSTRAP_ADMIN_EMAIL || "owner@yasarpack.com";
+const bootstrapAdminPassword = process.env.BOOTSTRAP_ADMIN_PASSWORD || "ChangeMe123!";
+
 async function main() {
   await prisma.adminLog.deleteMany();
   await prisma.translation.deleteMany();
@@ -22,7 +25,7 @@ async function main() {
   await prisma.user.deleteMany();
   await prisma.loyaltyTier.deleteMany();
 
-  const passwordAdmin = await bcrypt.hash("Admin123!", 12);
+  const passwordAdmin = await bcrypt.hash(bootstrapAdminPassword, 12);
   const passwordUser = await bcrypt.hash("User123!", 12);
   const passwordUser2 = await bcrypt.hash("Client123!", 12);
 
@@ -71,7 +74,7 @@ async function main() {
       brandName: "YasarPack",
       shortName: "Yasar",
       legalName: "YasarPack SAS",
-      tagline: "Digital settlement platform",
+      tagline: "Professional crypto exchange operations",
       supportEmail: "support@yasarpack.com",
       supportPhone: "+33 1 84 80 29 11",
       primaryColor: "#16c47f",
@@ -79,21 +82,46 @@ async function main() {
       accentColor: "#f6b554",
       logoText: "YP",
       metaTitle: "YasarPack | Fintech & Crypto Platform",
-      metaDescription: "Premium fintech and crypto operations platform with real dashboards, KYC, payments, loyalty and multilingual CMS.",
-      footerText: "YasarPack - premium digital settlement operations."
+      metaDescription: "Professional fintech and crypto operations platform with real dashboards, manual payment flows, loyalty, support and multilingual CMS.",
+      footerText: "YasarPack - professional digital settlement operations."
     }
+  });
+
+  await prisma.siteSetting.createMany({
+    data: [
+      {
+        key: "site.socials",
+        locale: "global",
+        value: {
+          discord: "https://discord.gg/yasarpack",
+          telegram: "https://t.me/yasarpack",
+          twitter: "https://x.com/yasarpack"
+        }
+      },
+      {
+        key: "site.announcement",
+        locale: "global",
+        value: {
+          active: true,
+          tone: "info",
+          text: "Manual payment requests are reviewed by an operator. If you need urgent help, use the support center, Discord or Telegram.",
+          ctaLabel: "Support center",
+          ctaUrl: "/support"
+        }
+      }
+    ]
   });
 
   const admin = await prisma.user.create({
     data: {
       firstName: "Admin",
       lastName: "Yasar",
-      email: "admin@yasarpack.com",
+      email: bootstrapAdminEmail,
       passwordHash: passwordAdmin,
       phone: "+33 6 11 22 33 44",
       country: "France",
       language: "fr",
-      role: Role.ADMIN,
+      role: Role.SUPER_ADMIN,
       isActive: true,
       kycStatus: KycStatus.APPROVED,
       loyaltyPoints: 18420,
@@ -157,10 +185,23 @@ async function main() {
         displayInFooter: true,
         trustMessage: "Le plus rassurant pour les nouveaux utilisateurs.",
         unavailableMessage: "Temporairement indisponible pour certaines juridictions.",
+        instructionsTitle: "Envoyer le paiement PayPal",
+        instructionsBody: "Copiez l'identifiant admin, utilisez la reference affichee dans votre ordre, puis televersez une preuve si necessaire. La demande passe ensuite en verification manuelle.",
+        recipientLabel: "PayPal email",
+        recipientValue: "payments@yasarpack.com",
+        paymentLink: "https://paypal.me/yasarpack",
+        referenceLabel: "Reference order",
+        referenceValue: "Use the generated order reference",
+        requiresProof: true,
+        proofHelpText: "Ajoutez une capture du paiement une fois l'envoi confirme.",
+        messageTemplates: ["Manual exchange payment", "PayPal order confirmation", "Reference attached to the order"],
+        supportDiscordUrl: "https://discord.gg/yasarpack",
+        supportTelegramUrl: "https://t.me/yasarpack",
         sortOrder: 1,
         feeFixed: 0,
         feePercent: 1.9,
-        estimatedDelay: "Instant",
+        estimatedDelay: "Instant a 15 min",
+        supportedAssets: ["BTC", "LTC", "ETH", "USDT"],
         loyaltyBonusPoints: 15
       }
     }),
@@ -181,10 +222,15 @@ async function main() {
         displayInCheckout: true,
         displayInFooter: true,
         trustMessage: "Cartes supportees avec affichage clair des frais.",
+        instructionsTitle: "Paiement carte",
+        instructionsBody: "Utilisez le flux carte pour financer votre ordre. L'admin peut mettre le rail en maintenance a tout moment.",
+        recipientLabel: "Checkout provider",
+        recipientValue: "Configured by admin",
         sortOrder: 2,
         feeFixed: 0,
         feePercent: 2.1,
         estimatedDelay: "< 5 min",
+        supportedAssets: ["BTC", "ETH", "USDT"],
         loyaltyBonusPoints: 10
       }
     }),
@@ -205,10 +251,17 @@ async function main() {
         displayInCheckout: true,
         displayInFooter: true,
         trustMessage: "Idéal pour les volumes plus élevés.",
+        instructionsTitle: "SEPA transfer instructions",
+        instructionsBody: "Copy the bank reference exactly as shown in the order. Your transaction remains pending until the funds are received and confirmed by admin.",
+        recipientLabel: "IBAN",
+        recipientValue: "FR76 3000 4000 5000 6000 7000 890",
+        referenceLabel: "Transfer reference",
+        referenceValue: "Generated per order",
         sortOrder: 3,
         feeFixed: 1.5,
         feePercent: 0.8,
         estimatedDelay: "1-2 business days",
+        supportedAssets: ["BTC", "LTC", "ETH", "USDT"],
         loyaltyBonusPoints: 25
       }
     }),
@@ -229,11 +282,47 @@ async function main() {
         displayInCheckout: true,
         displayInFooter: false,
         trustMessage: "Ideal pour une experience mobile premium.",
+        instructionsTitle: "Mobile checkout",
+        instructionsBody: "Use a supported mobile wallet and confirm your payment. Upload proof if the rail requires manual reconciliation.",
         sortOrder: 4,
         feeFixed: 0,
         feePercent: 1.8,
         estimatedDelay: "Instant",
+        supportedAssets: ["BTC", "ETH", "USDT"],
         loyaltyBonusPoints: 12
+      }
+    }),
+    paysafecard: await prisma.paymentMethod.create({
+      data: {
+        name: "Paysafecard",
+        slug: "paysafecard",
+        description: "Semi-manual code verification flow handled by an operator.",
+        active: true,
+        recommended: false,
+        maintenanceMode: false,
+        supportBuy: true,
+        supportSell: false,
+        supportDeposit: true,
+        supportWithdrawal: false,
+        supportedAssets: ["BTC", "LTC", "ETH", "USDT"],
+        countryRestrictions: [],
+        displayInHero: true,
+        displayInCheckout: true,
+        displayInFooter: true,
+        trustMessage: "Code based payments can be reviewed manually before payout.",
+        instructionsTitle: "Submit your Paysafecard code",
+        instructionsBody: "Enter the code details, confirm the amount, then wait for admin review. You will receive a status update once the operator validates the code.",
+        recipientLabel: "Code handling",
+        recipientValue: "Manual review by operator",
+        requiresProof: false,
+        proofHelpText: "An operator typically responds within about one hour.",
+        sortOrder: 5,
+        feeFixed: 0,
+        feePercent: 2.5,
+        estimatedDelay: "Manual review",
+        loyaltyBonusPoints: 8,
+        supportDiscordUrl: "https://discord.gg/yasarpack",
+        supportTelegramUrl: "https://t.me/yasarpack"
       }
     })
   };

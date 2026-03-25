@@ -64,12 +64,25 @@ export const paymentMethodSchema = z.object({
   supportSell: z.boolean().default(true),
   supportDeposit: z.boolean().default(true),
   supportWithdrawal: z.boolean().default(true),
+  supportedAssets: z.array(z.string().max(16)).default([]),
   countryRestrictions: z.array(z.string().max(8)).default([]),
   displayInHero: z.boolean().default(true),
   displayInCheckout: z.boolean().default(true),
   displayInFooter: z.boolean().default(true),
   trustMessage: z.string().max(300).optional().or(z.literal("")),
   unavailableMessage: z.string().max(300).optional().or(z.literal("")),
+  instructionsTitle: z.string().max(120).optional().or(z.literal("")),
+  instructionsBody: z.string().max(2000).optional().or(z.literal("")),
+  recipientLabel: z.string().max(80).optional().or(z.literal("")),
+  recipientValue: z.string().max(200).optional().or(z.literal("")),
+  paymentLink: optionalUrl,
+  referenceLabel: z.string().max(80).optional().or(z.literal("")),
+  referenceValue: z.string().max(240).optional().or(z.literal("")),
+  requiresProof: z.boolean().default(false),
+  proofHelpText: z.string().max(240).optional().or(z.literal("")),
+  messageTemplatesRaw: z.string().max(5000).optional().or(z.literal("")),
+  supportDiscordUrl: optionalUrl,
+  supportTelegramUrl: optionalUrl,
   sortOrder: z.number().int().min(0),
   feeFixed: z.number().min(0),
   feePercent: z.number().min(0).max(100),
@@ -212,4 +225,33 @@ export const cmsContactSchema = z.object({
 export const cmsFooterSchema = z.object({
   aboutText: z.string().min(10).max(500),
   finalNote: z.string().min(3).max(300)
+});
+
+export const exchangeRequestSchema = z.object({
+  paymentMethodId: z.string().cuid(),
+  operation: z.enum(["BUY", "SELL", "DEPOSIT", "WITHDRAWAL"]),
+  sourceAmount: z.number().positive().max(1000000),
+  sourceCurrency: z.string().min(2).max(16),
+  targetAsset: z.string().min(2).max(16),
+  destinationDetails: z.string().min(2).max(240),
+  referenceMessage: z.string().max(500).optional().or(z.literal("")),
+  notes: z.string().max(2000).optional().or(z.literal(""))
+});
+
+export const cmsSocialsSchema = z.object({
+  discord: optionalUrl,
+  telegram: optionalUrl,
+  twitter: optionalUrl,
+  instagram: optionalUrl,
+  facebook: optionalUrl,
+  linkedin: optionalUrl,
+  youtube: optionalUrl
+});
+
+export const announcementSchema = z.object({
+  active: z.boolean().default(false),
+  tone: z.enum(["info", "warning", "success", "maintenance"]),
+  text: z.string().min(5).max(500),
+  ctaLabel: z.string().max(80).optional().or(z.literal("")),
+  ctaUrl: z.string().max(200).optional().or(z.literal(""))
 });

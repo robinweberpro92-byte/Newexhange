@@ -6,6 +6,7 @@ import { Select } from "@/components/ui/select";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Textarea } from "@/components/ui/textarea";
 import { getAdminUserDetail } from "@/lib/queries";
+import { roleLabel } from "@/lib/rbac";
 import { formatDate, formatCurrency, toNumber } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
@@ -33,7 +34,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             </div>
             <div className="flex gap-2">
               <Badge tone={data.user.isActive ? "green" : "red"}>{data.user.isActive ? "Active" : "Suspended"}</Badge>
-              <Badge tone="blue">{data.user.role}</Badge>
+              <Badge tone="blue">{roleLabel(data.user.role)}</Badge>
             </div>
           </div>
           <div className="grid gap-4 md:grid-cols-2">

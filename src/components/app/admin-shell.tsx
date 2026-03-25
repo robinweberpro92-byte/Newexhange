@@ -15,7 +15,7 @@ type AdminShellProps = {
 
 const items = [
   { href: "/admin/overview", label: "Overview" },
-  { href: "/admin/users", label: "Users" },
+  { href: "/admin/users", label: "Users & admins" },
   { href: "/admin/transactions", label: "Transactions" },
   { href: "/admin/payments", label: "Payments" },
   { href: "/admin/reviews", label: "Reviews" },
@@ -39,7 +39,7 @@ export function AdminShell({ title, subtitle, adminName, adminEmail, children }:
             <p className="text-sm text-muted">{adminEmail}</p>
           </div>
           <div className="rounded-2xl border border-line bg-white/5 px-4 py-3 text-sm text-muted">
-            You are managing users, payments, loyalty, reviews, support and branding.
+            You are managing users, admin roles, payments, loyalty, support, content and branding.
           </div>
         </Card>
         <Card className="space-y-2 p-3">

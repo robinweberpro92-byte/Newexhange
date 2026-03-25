@@ -6,6 +6,7 @@ import { Select } from "@/components/ui/select";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Textarea } from "@/components/ui/textarea";
 import { getAdminTicketDetail } from "@/lib/queries";
+import { adminRoles, isAdminRole, roleLabel } from "@/lib/rbac";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
 import { redirect } from "next/navigation";
@@ -15,7 +16,7 @@ export default async function AdminTicketDetailPage({ params }: { params: Promis
   const [ticket, admins] = await Promise.all([
     getAdminTicketDetail(ticketId),
     prisma.user.findMany({
-      where: { role: "ADMIN", isActive: true },
+      where: { role: { in: adminRoles as unknown as any }, isActive: true },
       orderBy: [{ firstName: "asc" }, { lastName: "asc" }]
     })
   ]);
@@ -50,12 +51,12 @@ export default async function AdminTicketDetailPage({ params }: { params: Promis
             {ticket.messages.map((message) => (
               <div
                 key={message.id}
-                className={`rounded-3xl border p-4 ${message.isInternal ? "border-amber-500/20 bg-amber-500/10" : message.authorRole === "ADMIN" ? "border-sky-500/20 bg-sky-500/10" : "border-line bg-white/5"}`}
+                className={`rounded-3xl border p-4 ${message.isInternal ? "border-amber-500/20 bg-amber-500/10" : isAdminRole(message.authorRole) ? "border-sky-500/20 bg-sky-500/10" : "border-line bg-white/5"}`}
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-semibold text-text">{message.author.firstName} {message.author.lastName}</p>
-                    <Badge tone={message.isInternal ? "amber" : message.authorRole === "ADMIN" ? "blue" : "slate"}>{message.isInternal ? "INTERNAL" : message.authorRole}</Badge>
+                    <Badge tone={message.isInternal ? "amber" : isAdminRole(message.authorRole) ? "blue" : "slate"}>{message.isInternal ? "INTERNAL" : roleLabel(message.authorRole)}</Badge>
                   </div>
                   <p className="text-xs uppercase tracking-[0.16em] text-muted">{formatDate(message.createdAt)}</p>
                 </div>

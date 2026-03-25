@@ -56,6 +56,17 @@ export default async function AdminTransactionDetailPage({ params }: { params: P
         <div className="rounded-2xl border border-line bg-white/5 p-4 text-sm text-muted">
           Loyalty events linked to this transaction: {transaction.loyaltyEvents.length}
         </div>
+        {transaction.metadata ? (
+          <Card className="space-y-3 p-5">
+            <p className="text-xs uppercase tracking-[0.16em] text-muted">Manual order metadata</p>
+            <div className="grid gap-3 md:grid-cols-2 text-sm text-muted">
+              <div>Destination: <span className="font-semibold text-text">{(transaction.metadata as Record<string, string>).destinationDetails ?? "—"}</span></div>
+              <div>Reference: <span className="font-semibold text-text">{(transaction.metadata as Record<string, string>).referenceMessage ?? "—"}</span></div>
+              <div>Recipient: <span className="font-semibold text-text">{(transaction.metadata as Record<string, string>).recipientValue ?? "—"}</span></div>
+              <div>Proof required: <span className="font-semibold text-text">{String((transaction.metadata as Record<string, string>).requiresProof ?? false)}</span></div>
+            </div>
+          </Card>
+        ) : null}
       </Card>
 
       <Card className="space-y-4">
