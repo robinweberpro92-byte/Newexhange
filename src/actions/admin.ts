@@ -41,11 +41,17 @@ function parseCountryRestrictions(raw: FormDataEntryValue | null) {
     .filter(Boolean);
 }
 
-function parseTagList(raw: FormDataEntryValue | null, normalizer: (value: string) => string = (value) => value) {
-  return sanitizeText(raw, 5000)
-    .split(/
-?
-|,/)
+function parseTagList(
+  raw: FormDataEntryValue | null,
+  normalizer: (value: string) => string = (value) => value
+) {
+  if (!raw) return [];
+
+  const text = sanitizeText(raw, 5000);
+
+  return text
+    .replace(/\r/g, "") // gère Windows \r\n
+    .split(/[\n,]+/)
     .map((value) => normalizer(value.trim()))
     .filter(Boolean);
 }
