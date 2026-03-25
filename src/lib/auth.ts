@@ -12,7 +12,7 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
     maxAge: 60 * 60 * 24 * 7
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || "fallback_secret_for_build_only",
   debug: process.env.NEXTAUTH_DEBUG === "true",
   pages: {
     signIn: "/login"

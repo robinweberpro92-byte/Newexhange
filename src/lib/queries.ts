@@ -14,34 +14,50 @@ export async function getMarketingData(locale: "fr" | "en") {
     getFinalCtaContent(locale),
     getFooterContent(),
     getContactContent(),
-    prisma.paymentMethod.findMany({
-      where: {
-        active: true,
-        displayInHero: true
-      },
-      orderBy: { sortOrder: "asc" }
-    }),
-    prisma.loyaltyTier.findMany({
-      where: { isActive: true },
-      orderBy: { sortOrder: "asc" }
-    }),
-    prisma.review.findMany({
-      where: {
-        locale,
-        status: ReviewStatus.APPROVED,
-        featured: true
-      },
-      orderBy: [{ sortOrder: "asc" }, { displayDate: "desc" }],
-      take: 6
-    }),
-    prisma.faqItem.findMany({
-      where: {
-        locale,
-        active: true
-      },
-      orderBy: { sortOrder: "asc" },
-      take: 8
-    })
+    withFallback(
+      () => prisma.paymentMethod.findMany({
+        where: {
+          active: true,
+          displayInHero: true
+        },
+        orderBy: { sortOrder: "asc" }
+      }),
+      [] as any[],
+      "marketing payment methods"
+    ),
+    withFallback(
+      () => prisma.loyaltyTier.findMany({
+        where: { isActive: true },
+        orderBy: { sortOrder: "asc" }
+      }),
+      [] as any[],
+      "marketing loyalty tiers"
+    ),
+    withFallback(
+      () => prisma.review.findMany({
+        where: {
+          locale,
+          status: ReviewStatus.APPROVED,
+          featured: true
+        },
+        orderBy: [{ sortOrder: "asc" }, { displayDate: "desc" }],
+        take: 6
+      }),
+      [] as any[],
+      "marketing reviews"
+    ),
+    withFallback(
+      () => prisma.faqItem.findMany({
+        where: {
+          locale,
+          active: true
+        },
+        orderBy: { sortOrder: "asc" },
+        take: 8
+      }),
+      [] as any[],
+      "marketing faqs"
+    )
   ]);
 
   return { brand, hero, trust, finalCta, footer, contact, paymentMethods, tiers, reviews, faqs };

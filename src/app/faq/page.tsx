@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { withFallback } from "@/lib/data-access";
 
 type FaqItem = {
   id: string;
@@ -8,10 +9,14 @@ type FaqItem = {
 };
 
 export default async function FaqPage() {
-  const dbFaqs = await prisma.faqItem.findMany({
-    where: { active: true },
-    orderBy: { sortOrder: "asc" }
-  });
+  const dbFaqs = await withFallback(
+    () => prisma.faqItem.findMany({
+      where: { active: true },
+      orderBy: { sortOrder: "asc" }
+    }),
+    [] as any[],
+    "faq list"
+  );
 
   const fallbackFaqs: FaqItem[] = [
     {

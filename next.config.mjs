@@ -10,7 +10,6 @@ const securityHeaders = [
 ];
 
 const nextConfig = {
-  outputFileTracingRoot: __dirname,
   experimental: {
     serverActions: {
       bodySizeLimit: "5mb"
