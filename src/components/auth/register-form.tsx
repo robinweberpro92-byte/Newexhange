@@ -80,12 +80,7 @@ export function RegisterForm() {
         </div>
         {form.formState.errors.confirmPassword ? <p className="text-sm text-red-300">{form.formState.errors.confirmPassword.message}</p> : null}
       </div>
-      <label className="flex items-start gap-3 rounded-2xl border border-line bg-white/5 px-4 py-3 text-sm text-muted">
-        <input type="checkbox" required className="mt-1 h-4 w-4 accent-[var(--brand-primary)]" />
-        <span>
-          J'accepte les <Link href="/legal/terms" className="text-text underline underline-offset-4">conditions d'utilisation</Link> et la <Link href="/legal/privacy" className="text-text underline underline-offset-4">politique de confidentialite</Link>.
-        </span>
-      </label>
+      
       <div className="rounded-[1.6rem] border border-line bg-white/5 p-4 text-sm text-muted">
         <div className="flex items-start gap-3">
           <ShieldCheck className="mt-0.5 h-4 w-4 text-[var(--brand-primary)]" />

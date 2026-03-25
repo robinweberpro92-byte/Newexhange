@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Textarea } from "@/components/ui/textarea";
 import { prisma } from "@/lib/prisma";
-import { formatDate, toNumber } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 
 export default async function AdminPaymentsPage({
   searchParams

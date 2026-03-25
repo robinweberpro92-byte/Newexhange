@@ -20,7 +20,7 @@ export const elevatedAdminRoles = [
 ] as const;
 
 export function isAdminRole(role?: Role | null): boolean {
-  return Boolean(role && adminRoles.includes(role));
+  return Boolean(role && (adminRoles as readonly string[]).includes(role));
 }
 
 export function isSuperAdminRole(role?: Role | null): boolean {

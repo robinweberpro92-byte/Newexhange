@@ -67,11 +67,14 @@ export function getOperationLabel(type: TransactionType | string) {
   }
 }
 
-export function formatSupportedAssets(method?: Pick<PaymentMethod, "supportedAssets"> | null) {
-  return method?.supportedAssets?.length ? method.supportedAssets.join(" • ") : supportedAssets.join(" • ");
+export function formatSupportedAssets(method?: { supportedAssets?: unknown } | null) {
+  const assets = Array.isArray(method?.supportedAssets)
+    ? (method!.supportedAssets as unknown[]).filter((v): v is string => typeof v === "string")
+    : supportedAssets;
+  return assets.length ? assets.join(" • ") : supportedAssets.join(" • ");
 }
 
-export function getMethodFeeSummary(method?: Pick<PaymentMethod, "feeFixed" | "feePercent"> | null) {
+export function getMethodFeeSummary(method?: { feeFixed?: unknown; feePercent?: unknown } | null) {
   if (!method) return "Transparent fees shown before confirmation";
   return `${toNumber(method.feePercent)}% + €${toNumber(method.feeFixed).toFixed(2)}`;
 }

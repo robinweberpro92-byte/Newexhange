@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 import { withFallback } from "@/lib/data-access";
 
 export type HeroContent = {
@@ -172,7 +173,7 @@ async function getSetting<T>(key: string, locale: string, fallback: T): Promise<
   );
 }
 
-export function upsertSiteSetting(key: string, locale: string, value: Record<string, unknown>, description?: string) {
+export function upsertSiteSetting(key: string, locale: string, value: Prisma.InputJsonValue, description?: string) {
   return prisma.siteSetting.upsert({
     where: {
       key_locale: {
