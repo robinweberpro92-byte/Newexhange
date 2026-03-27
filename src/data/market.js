@@ -1,0 +1,38 @@
+export const marketData = [
+  {
+    symbol: 'BTC',
+    name: 'Bitcoin',
+    price: 67244,
+    change: 3.2,
+    volume: '€18.4B',
+    marketCap: '€1.32T',
+    series: [58, 61, 60, 63, 67, 69, 72],
+  },
+  {
+    symbol: 'ETH',
+    name: 'Ethereum',
+    price: 3486,
+    change: 2.14,
+    volume: '€9.1B',
+    marketCap: '€420B',
+    series: [44, 46, 45, 47, 49, 50, 53],
+  },
+  {
+    symbol: 'USDT',
+    name: 'Tether',
+    price: 1,
+    change: 0.02,
+    volume: '€31.2B',
+    marketCap: '€101B',
+    series: [50, 50, 51, 50, 50, 49, 50],
+  },
+  {
+    symbol: 'LTC',
+    name: 'Litecoin',
+    price: 87,
+    change: -1.37,
+    volume: '€620M',
+    marketCap: '€6.5B',
+    series: [65, 63, 62, 61, 60, 58, 57],
+  },
+];

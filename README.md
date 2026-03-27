@@ -1,80 +1,75 @@
-# YasarPack platform
+# NovaBridge Front
 
-YasarPack is a premium fintech / crypto platform base built on **Next.js App Router + PostgreSQL + Prisma + NextAuth**.
-It upgrades the provided premium redesign into a functional product foundation with real auth, user and admin dashboards, configurable payments, loyalty, support tickets, branding, CMS and multilingual content.
+Front React + Vite, sombre et premium, pensé pour une démo de type exchange crypto.
 
-## Included modules
+## Ce que contient le projet
 
-- real authentication with roles
-- secure password hashing with bcrypt
-- user dashboard
-- admin dashboard
-- configurable payment methods
-- loyalty tiers and history
-- support tickets with threaded messages
-- KYC mock upload flow
-- editable branding
-- editable CMS blocks
-- translation overrides (FR / EN)
-- demo seed data
+- landing page premium
+- page exchange
+- page market
+- dashboard
+- page transactions
+- login démo
+- admin panel local pour changer branding, PayPal, wallets et frais
+- persistance via `localStorage`
+- build statique simple, sans Prisma
 
-## Stack
+## Pourquoi ce projet évite les galères Vercel
 
-- Next.js App Router
-- React
-- Tailwind CSS
-- Prisma ORM
-- PostgreSQL
-- NextAuth Credentials provider
-- Zod
-- React Hook Form for auth forms
+- aucune dépendance Prisma
+- aucun backend requis pour le build
+- build purement statique via Vite
+- `vercel.json` inclus pour les routes SPA
 
-## Demo accounts
-
-- Admin: `admin@yasarpack.com` / `Admin123!`
-- User: `user@yasarpack.com` / `User123!`
-
-## Local installation
+## Installation
 
 ```bash
-cp .env.example .env
 npm install
-npm run db:generate
-npm run db:migrate
-npm run db:seed
 npm run dev
 ```
 
-Open `http://localhost:3000`
-
-## Required environment variables
-
-See `.env.example`.
-
-Main variables:
-
-- `DATABASE_URL`
-- `NEXTAUTH_SECRET`
-- `NEXTAUTH_URL`
-- `NEXT_PUBLIC_APP_URL`
-- `UPLOAD_DIR`
-
-## Recommended local PostgreSQL quick start
+## Build production
 
 ```bash
-docker run --name yasarpack-pg \
-  -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=yasarpack \
-  -p 5432:5432 \
-  -d postgres:16
+npm run build
+npm run preview
 ```
 
-## Project structure
+Le build sort dans `dist/`.
 
-See `docs/ARCHITECTURE.md`.
+## Déploiement Vercel
 
-## Notes
+Le projet est prêt pour un déploiement statique. Le fichier `vercel.json` contient déjà le rewrite SPA vers `index.html`.
 
-- The current file-upload strategy uses local disk storage under `public/uploads` as a mock KYC implementation.
-- The built-in rate limiter is intentionally simple and should be replaced by Redis / Upstash / gateway controls in distributed production.
-- Branding, CMS and translations live in the database and are surfaced in the admin back-office.
+## Où changer rapidement les valeurs
+
+### Sans code
+
+- va sur `/login`
+- connecte-toi avec `admin@novabridge.dev` / `demo1234`
+- ouvre `/admin`
+- change le branding, le PayPal, les wallets, les frais
+
+### Dans le code
+
+- `src/config/defaultConfig.js`
+
+## API plus tard
+
+Si tu veux brancher une vraie API ensuite, commence par remplacer les mocks dans:
+
+- `src/data/market.js`
+- `src/data/transactions.js`
+
+Puis ajoute tes appels dans tes propres services. Le build front restera simple.
+
+## Variables d'environnement
+
+Voir `.env.example`.
+
+- `VITE_API_BASE_URL`
+- `VITE_ENABLE_REMOTE_API`
+
+## Notes importantes
+
+L'admin actuel est une démo front uniquement. Il ne sécurise rien côté serveur. Pour une vraie prod, branche ton backend et ta vraie auth.
